@@ -17,6 +17,8 @@ const (
 	SEMICOLON  = "SEMICOLON"
 	STAR       = "STAR"
 	SLASH      = "SLASH"
+	EQUAL      = "EQUAL"
+	EqualEqual = "EQUAL_EQUAL"
 	NEWLINE    = "NEWLINE"
 )
 
@@ -32,6 +34,7 @@ var tokens = map[string]rune{
 	"SEMICOLON":   ';',
 	"STAR":        '*',
 	"SLASH":       '/',
+	"EQUAL":       '=',
 	"NEWLINE":     '\n',
 }
 
@@ -58,35 +61,43 @@ func main() {
 	line := 1
 	errors := 0
 	if len(fileContents) > 0 {
-		for _, item := range fileContents {
-			switch item {
+		for i := 0; i < len(fileContents); i++ {
+			token := fileContents[i]
+			switch token {
 			case tokens[LeftParen]:
-				fmt.Printf("%s %c %s\n", LeftParen, item, "null")
+				fmt.Printf("%s %c %s\n", LeftParen, token, "null")
 			case tokens[RightParen]:
-				fmt.Printf("%s %c %s\n", RightParen, item, "null")
+				fmt.Printf("%s %c %s\n", RightParen, token, "null")
 			case tokens[LeftBrace]:
-				fmt.Printf("%s %c %s\n", LeftBrace, item, "null")
+				fmt.Printf("%s %c %s\n", LeftBrace, token, "null")
 			case tokens[RightBrace]:
-				fmt.Printf("%s %c %s\n", RightBrace, item, "null")
+				fmt.Printf("%s %c %s\n", RightBrace, token, "null")
 			case tokens[COMMA]:
-				fmt.Printf("%s %c %s\n", COMMA, item, "null")
+				fmt.Printf("%s %c %s\n", COMMA, token, "null")
 			case tokens[DOT]:
-				fmt.Printf("%s %c %s\n", DOT, item, "null")
+				fmt.Printf("%s %c %s\n", DOT, token, "null")
 			case tokens[MINUS]:
-				fmt.Printf("%s %c %s\n", MINUS, item, "null")
+				fmt.Printf("%s %c %s\n", MINUS, token, "null")
 			case tokens[PLUS]:
-				fmt.Printf("%s %c %s\n", PLUS, item, "null")
+				fmt.Printf("%s %c %s\n", PLUS, token, "null")
 			case tokens[SEMICOLON]:
-				fmt.Printf("%s %c %s\n", SEMICOLON, item, "null")
+				fmt.Printf("%s %c %s\n", SEMICOLON, token, "null")
 			case tokens[STAR]:
-				fmt.Printf("%s %c %s\n", STAR, item, "null")
+				fmt.Printf("%s %c %s\n", STAR, token, "null")
 			case tokens[SLASH]:
-				fmt.Printf("%s %c %s\n", SLASH, item, "null")
+				fmt.Printf("%s %c %s\n", SLASH, token, "null")
+			case tokens[EQUAL]:
+				if i+1 < len(fileContents) && fileContents[i+1] == tokens[EQUAL] {
+					fmt.Printf("%s %c%c %s\n", EqualEqual, token, token, "null")
+					i++
+				} else {
+					fmt.Printf("%s %c %s\n", EQUAL, token, "null")
+				}
 			case tokens[NEWLINE]:
 				line++
 			default:
 				errors++
-				fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", line, item)
+				fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", line, token)
 			}
 		}
 		fmt.Println("EOF  null")

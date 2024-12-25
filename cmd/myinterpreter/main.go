@@ -6,17 +6,18 @@ import (
 )
 
 const (
-	LEFT_PAREN  = "LEFT_PAREN"
-	RIGHT_PAREN = "RIGHT_PAREN"
-	LEFT_BRACE  = "LEFT_BRACE"
-	RIGHT_BRACE = "RIGHT_BRACE"
-	COMMA       = "COMMA"
-	DOT         = "DOT"
-	MINUS       = "MINUS"
-	PLUS        = "PLUS"
-	SEMICOLON   = "SEMICOLON"
-	STAR        = "STAR"
-	SLASH       = "SLASH"
+	LeftParen  = "LEFT_PAREN"
+	RightParen = "RIGHT_PAREN"
+	LeftBrace  = "LEFT_BRACE"
+	RightBrace = "RIGHT_BRACE"
+	COMMA      = "COMMA"
+	DOT        = "DOT"
+	MINUS      = "MINUS"
+	PLUS       = "PLUS"
+	SEMICOLON  = "SEMICOLON"
+	STAR       = "STAR"
+	SLASH      = "SLASH"
+	NEWLINE    = "NEWLINE"
 )
 
 var tokens = map[string]rune{
@@ -31,6 +32,7 @@ var tokens = map[string]rune{
 	"SEMICOLON":   ';',
 	"STAR":        '*',
 	"SLASH":       '/',
+	"NEWLINE":     '\n',
 }
 
 func main() {
@@ -53,17 +55,19 @@ func main() {
 	}
 
 	fileContents := []rune(string(rawFileContents))
+	line := 1
+	errors := 0
 	if len(fileContents) > 0 {
 		for _, item := range fileContents {
 			switch item {
-			case tokens[LEFT_PAREN]:
-				fmt.Printf("%s %c %s\n", LEFT_PAREN, item, "null")
-			case tokens[RIGHT_PAREN]:
-				fmt.Printf("%s %c %s\n", RIGHT_PAREN, item, "null")
-			case tokens[LEFT_BRACE]:
-				fmt.Printf("%s %c %s\n", LEFT_BRACE, item, "null")
-			case tokens[RIGHT_BRACE]:
-				fmt.Printf("%s %c %s\n", RIGHT_BRACE, item, "null")
+			case tokens[LeftParen]:
+				fmt.Printf("%s %c %s\n", LeftParen, item, "null")
+			case tokens[RightParen]:
+				fmt.Printf("%s %c %s\n", RightParen, item, "null")
+			case tokens[LeftBrace]:
+				fmt.Printf("%s %c %s\n", LeftBrace, item, "null")
+			case tokens[RightBrace]:
+				fmt.Printf("%s %c %s\n", RightBrace, item, "null")
 			case tokens[COMMA]:
 				fmt.Printf("%s %c %s\n", COMMA, item, "null")
 			case tokens[DOT]:
@@ -78,10 +82,19 @@ func main() {
 				fmt.Printf("%s %c %s\n", STAR, item, "null")
 			case tokens[SLASH]:
 				fmt.Printf("%s %c %s\n", SLASH, item, "null")
+			case tokens[NEWLINE]:
+				line++
+			default:
+				errors++
+				fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", line, item)
 			}
 		}
 		fmt.Println("EOF  null")
 	} else {
 		fmt.Println("EOF  null")
+	}
+
+	if errors > 0 {
+		os.Exit(65)
 	}
 }

@@ -6,22 +6,26 @@ import (
 )
 
 const (
-	LeftParen  = "LEFT_PAREN"
-	RightParen = "RIGHT_PAREN"
-	LeftBrace  = "LEFT_BRACE"
-	RightBrace = "RIGHT_BRACE"
-	COMMA      = "COMMA"
-	DOT        = "DOT"
-	MINUS      = "MINUS"
-	PLUS       = "PLUS"
-	SEMICOLON  = "SEMICOLON"
-	STAR       = "STAR"
-	SLASH      = "SLASH"
-	EQUAL      = "EQUAL"
-	EqualEqual = "EQUAL_EQUAL"
-	BangEqual  = "BANG_EQUAL"
-	BANG       = "BANG"
-	NEWLINE    = "NEWLINE"
+	LeftParen    = "LEFT_PAREN"
+	RightParen   = "RIGHT_PAREN"
+	LeftBrace    = "LEFT_BRACE"
+	RightBrace   = "RIGHT_BRACE"
+	COMMA        = "COMMA"
+	DOT          = "DOT"
+	MINUS        = "MINUS"
+	PLUS         = "PLUS"
+	SEMICOLON    = "SEMICOLON"
+	STAR         = "STAR"
+	SLASH        = "SLASH"
+	EQUAL        = "EQUAL"
+	EqualEqual   = "EQUAL_EQUAL"
+	BangEqual    = "BANG_EQUAL"
+	BANG         = "BANG"
+	LESS         = "LESS"
+	LessEqual    = "LESS_EQUAL"
+	GREATER      = "GREATER"
+	GreaterEqual = "GREATER_EQUAL"
+	NEWLINE      = "NEWLINE"
 )
 
 var tokens = map[string]rune{
@@ -38,6 +42,8 @@ var tokens = map[string]rune{
 	"SLASH":       '/',
 	"EQUAL":       '=',
 	"BANG":        '!',
+	"LESS":        '<',
+	"GREATER":     '>',
 	"NEWLINE":     '\n',
 }
 
@@ -102,6 +108,20 @@ func main() {
 					i++
 				} else {
 					fmt.Printf("%s %c %s\n", BANG, token, "null")
+				}
+			case tokens[LESS]:
+				if i+1 < len(fileContents) && fileContents[i+1] == tokens[EQUAL] {
+					fmt.Printf("%s %c%c %s\n", LessEqual, token, tokens[EQUAL], "null")
+					i++
+				} else {
+					fmt.Printf("%s %c %s\n", LESS, token, "null")
+				}
+			case tokens[GREATER]:
+				if i+1 < len(fileContents) && fileContents[i+1] == tokens[EQUAL] {
+					fmt.Printf("%s %c%c %s\n", GreaterEqual, token, tokens[EQUAL], "null")
+					i++
+				} else {
+					fmt.Printf("%s %c %s\n", GREATER, token, "null")
 				}
 			case tokens[NEWLINE]:
 				line++

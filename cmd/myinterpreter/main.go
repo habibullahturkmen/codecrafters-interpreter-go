@@ -19,6 +19,8 @@ const (
 	SLASH      = "SLASH"
 	EQUAL      = "EQUAL"
 	EqualEqual = "EQUAL_EQUAL"
+	BangEqual  = "BANG_EQUAL"
+	BANG       = "BANG"
 	NEWLINE    = "NEWLINE"
 )
 
@@ -35,6 +37,7 @@ var tokens = map[string]rune{
 	"STAR":        '*',
 	"SLASH":       '/',
 	"EQUAL":       '=',
+	"BANG":        '!',
 	"NEWLINE":     '\n',
 }
 
@@ -92,6 +95,13 @@ func main() {
 					i++
 				} else {
 					fmt.Printf("%s %c %s\n", EQUAL, token, "null")
+				}
+			case tokens[BANG]:
+				if i+1 < len(fileContents) && fileContents[i+1] == tokens[EQUAL] {
+					fmt.Printf("%s %c%c %s\n", BangEqual, token, tokens[EQUAL], "null")
+					i++
+				} else {
+					fmt.Printf("%s %c %s\n", BANG, token, "null")
 				}
 			case tokens[NEWLINE]:
 				line++

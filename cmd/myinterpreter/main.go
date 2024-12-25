@@ -30,18 +30,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	if len(fileContents) > 0 {
-		for _, item := range fileContents {
-			switch item {
-			case '(':
-				fmt.Println(LEFT_PAREN, string(item), "null")
-			case ')':
-				fmt.Println(RIGHT_PAREN, string(item), "null")
-			}
+	for _, item := range fileContents {
+		switch item {
+		case '(':
+			fmt.Println(LEFT_PAREN, string(item), "null")
+		case ')':
+			fmt.Println(RIGHT_PAREN, string(item), "null")
 		}
-		fmt.Println("EOF  null")
-
-	} else {
-		fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
 	}
+	fmt.Println("EOF  null")
 }

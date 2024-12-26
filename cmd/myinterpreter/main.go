@@ -72,15 +72,15 @@ func main() {
 
 	fileContents := []rune(string(rawFileContents))
 
-	// Replace "<TAB>" and "<SPACE>" with '\t' and ' ' if the file includes them
+	// Replace "<|TAB|>" and "<|SPACE|>" with '\t' and ' ' if the file includes them
 	processedContents := []rune{}
 	for i := 0; i < len(fileContents); i++ {
-		if i+4 < len(fileContents) && string(fileContents[i:i+5]) == "<TAB>" {
+		if i+6 < len(fileContents) && string(fileContents[i:i+7]) == "<|TAB|>" {
 			processedContents = append(processedContents, '\t')
-			i += 4 // Skip "<TAB>"
-		} else if i+6 < len(fileContents) && string(fileContents[i:i+7]) == "<SPACE>" {
+			i += 6 // Skip "<|TAB|>"
+		} else if i+8 < len(fileContents) && string(fileContents[i:i+9]) == "<|SPACE|>" {
 			processedContents = append(processedContents, ' ')
-			i += 6 // Skip "<SPACE>"
+			i += 8 // Skip "<|SPACE|>"
 		} else {
 			processedContents = append(processedContents, fileContents[i])
 		}
@@ -142,10 +142,11 @@ func main() {
 				}
 			case tokens[SLASH]: // Handle "/" and "//" (comments).
 				if i+1 < len(processedContents) && processedContents[i+1] == tokens[SLASH] {
-					// Skip single-line comments
+					// Skip single-line comments and increment line count for each newline encountered.
 					for i < len(processedContents) && processedContents[i] != tokens[NEWLINE] {
 						i++
 					}
+					line++
 				} else {
 					fmt.Printf("%s %c %s\n", SLASH, token, "null")
 				}

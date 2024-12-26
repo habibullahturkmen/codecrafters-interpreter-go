@@ -28,6 +28,7 @@ const (
 	NEWLINE      = "NEWLINE"
 	TAB          = "TAB"
 	SPACE        = "SPACE"
+	STRING       = "STRING"
 )
 
 var tokens = map[string]rune{
@@ -49,6 +50,7 @@ var tokens = map[string]rune{
 	"NEWLINE":     '\n',
 	"TAB":         '\t',
 	"SPACE":       ' ',
+	"STRING":      '"',
 }
 
 func main() {
@@ -150,6 +152,39 @@ func main() {
 				} else {
 					fmt.Printf("%s %c %s\n", SLASH, token, "null")
 				}
+			case tokens[STRING]:
+				//stringLiteral := ""
+				//i++
+				//for i < len(processedContents) {
+				//	if processedContents[i] == tokens[NEWLINE] {
+				//		errors++
+				//		fmt.Fprintf(os.Stderr, "[line %d] Error: Unterminated string.\n", line)
+				//		break
+				//	} else if processedContents[i] == tokens[STRING] {
+				//		fmt.Printf("%s \"%s\" %s\n", STRING, stringLiteral, stringLiteral)
+				//		break
+				//	} else {
+				//		stringLiteral += string(processedContents[i])
+				//	}
+				//	i++
+				//}
+
+				start := i
+				for i+1 < len(processedContents) && processedContents[i+1] != '"' {
+					if processedContents[i+1] == '\n' {
+						line++
+					}
+					i++
+				}
+				if i+1 >= len(processedContents) {
+					errors++
+					fmt.Fprintf(os.Stderr, "[line %d] Error: Unterminated string.\n", line)
+				} else {
+					i++
+					lex := string(processedContents[start : i+1])
+					lit := string(processedContents[start+1 : i])
+					fmt.Printf("%s %s %s\n", STRING, lex, lit)
+				}
 			case tokens[NEWLINE]:
 				line++
 			case tokens[TAB], tokens[SPACE]:
@@ -168,3 +203,8 @@ func main() {
 		os.Exit(65)
 	}
 }
+
+// Example output
+// <TOKEN_TYPE>    <LEXEME>    <LITERAL>
+// SLASH           /           null
+// STRING          "foo baz"   foo baz

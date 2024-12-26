@@ -26,6 +26,8 @@ const (
 	GREATER      = "GREATER"
 	GreaterEqual = "GREATER_EQUAL"
 	NEWLINE      = "NEWLINE"
+	TAB          = "TAB"
+	SPACE        = "SPACE"
 )
 
 var tokens = map[string]rune{
@@ -45,6 +47,8 @@ var tokens = map[string]rune{
 	"LESS":        '<',
 	"GREATER":     '>',
 	"NEWLINE":     '\n',
+	"TAB":         '\t',
+	"SPACE":       ' ',
 }
 
 func main() {
@@ -67,11 +71,26 @@ func main() {
 	}
 
 	fileContents := []rune(string(rawFileContents))
+
+	// Replace "<TAB>" and "<SPACE>" with '\t' and ' ' if the file includes them
+	processedContents := []rune{}
+	for i := 0; i < len(fileContents); i++ {
+		if i+4 < len(fileContents) && string(fileContents[i:i+5]) == "<TAB>" {
+			processedContents = append(processedContents, '\t')
+			i += 4 // Skip "<TAB>"
+		} else if i+6 < len(fileContents) && string(fileContents[i:i+7]) == "<SPACE>" {
+			processedContents = append(processedContents, ' ')
+			i += 6 // Skip "<SPACE>"
+		} else {
+			processedContents = append(processedContents, fileContents[i])
+		}
+	}
+
 	line := 1
 	errors := 0
-	if len(fileContents) > 0 {
-		for i := 0; i < len(fileContents); i++ {
-			token := fileContents[i]
+	if len(processedContents) > 0 {
+		for i := 0; i < len(processedContents); i++ {
+			token := processedContents[i]
 			switch token {
 			case tokens[LeftParen]:
 				fmt.Printf("%s %c %s\n", LeftParen, token, "null")
@@ -93,37 +112,38 @@ func main() {
 				fmt.Printf("%s %c %s\n", SEMICOLON, token, "null")
 			case tokens[STAR]:
 				fmt.Printf("%s %c %s\n", STAR, token, "null")
-			case tokens[EQUAL]:
-				if i+1 < len(fileContents) && fileContents[i+1] == tokens[EQUAL] {
+			case tokens[EQUAL]: // Handle "=" and "==".
+				if i+1 < len(processedContents) && processedContents[i+1] == tokens[EQUAL] {
 					fmt.Printf("%s %c%c %s\n", EqualEqual, token, token, "null")
-					i++
+					i++ // Skip the second "=".
 				} else {
 					fmt.Printf("%s %c %s\n", EQUAL, token, "null")
 				}
-			case tokens[BANG]:
-				if i+1 < len(fileContents) && fileContents[i+1] == tokens[EQUAL] {
+			case tokens[BANG]: // Handle "!" and "!=".
+				if i+1 < len(processedContents) && processedContents[i+1] == tokens[EQUAL] {
 					fmt.Printf("%s %c%c %s\n", BangEqual, token, tokens[EQUAL], "null")
-					i++
+					i++ // Skip the "=".
 				} else {
 					fmt.Printf("%s %c %s\n", BANG, token, "null")
 				}
-			case tokens[LESS]:
-				if i+1 < len(fileContents) && fileContents[i+1] == tokens[EQUAL] {
+			case tokens[LESS]: // Handle "<" and "<=".
+				if i+1 < len(processedContents) && processedContents[i+1] == tokens[EQUAL] {
 					fmt.Printf("%s %c%c %s\n", LessEqual, token, tokens[EQUAL], "null")
-					i++
+					i++ // Skip the "=".
 				} else {
 					fmt.Printf("%s %c %s\n", LESS, token, "null")
 				}
-			case tokens[GREATER]:
-				if i+1 < len(fileContents) && fileContents[i+1] == tokens[EQUAL] {
+			case tokens[GREATER]: // Handle ">" and ">=".
+				if i+1 < len(processedContents) && processedContents[i+1] == tokens[EQUAL] {
 					fmt.Printf("%s %c%c %s\n", GreaterEqual, token, tokens[EQUAL], "null")
-					i++
+					i++ // Skip the "=".
 				} else {
 					fmt.Printf("%s %c %s\n", GREATER, token, "null")
 				}
-			case tokens[SLASH]:
-				if i+1 < len(fileContents) && fileContents[i+1] == tokens[SLASH] {
-					for i < len(fileContents) && fileContents[i] != tokens[NEWLINE] {
+			case tokens[SLASH]: // Handle "/" and "//" (comments).
+				if i+1 < len(processedContents) && processedContents[i+1] == tokens[SLASH] {
+					// Skip single-line comments
+					for i < len(processedContents) && processedContents[i] != tokens[NEWLINE] {
 						i++
 					}
 				} else {
@@ -131,6 +151,8 @@ func main() {
 				}
 			case tokens[NEWLINE]:
 				line++
+			case tokens[TAB], tokens[SPACE]:
+				continue
 			default:
 				errors++
 				fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", line, token)

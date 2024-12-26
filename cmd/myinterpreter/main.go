@@ -93,8 +93,6 @@ func main() {
 				fmt.Printf("%s %c %s\n", SEMICOLON, token, "null")
 			case tokens[STAR]:
 				fmt.Printf("%s %c %s\n", STAR, token, "null")
-			case tokens[SLASH]:
-				fmt.Printf("%s %c %s\n", SLASH, token, "null")
 			case tokens[EQUAL]:
 				if i+1 < len(fileContents) && fileContents[i+1] == tokens[EQUAL] {
 					fmt.Printf("%s %c%c %s\n", EqualEqual, token, token, "null")
@@ -122,6 +120,14 @@ func main() {
 					i++
 				} else {
 					fmt.Printf("%s %c %s\n", GREATER, token, "null")
+				}
+			case tokens[SLASH]:
+				if i+1 < len(fileContents) && fileContents[i+1] == tokens[SLASH] {
+					for i < len(fileContents) && fileContents[i] != tokens[NEWLINE] {
+						i++
+					}
+				} else {
+					fmt.Printf("%s %c %s\n", SLASH, token, "null")
 				}
 			case tokens[NEWLINE]:
 				line++

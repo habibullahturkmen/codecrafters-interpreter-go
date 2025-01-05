@@ -195,7 +195,7 @@ func main() {
 						//}
 						i++
 					}
-					identifier := string(processedContents[start:i])
+					identifier := string(processedContents[start : i+1])
 					fmt.Printf("%s %s %s\n", IDENTIFIER, identifier, "null")
 				} else {
 					errors++

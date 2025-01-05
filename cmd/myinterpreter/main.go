@@ -57,6 +57,25 @@ var tokens = map[string]rune{
 	"STRING":      '"',
 }
 
+var reservedWords = map[string]string{
+	"and":    "AND",
+	"class":  "CLASS",
+	"else":   "ELSE",
+	"false":  "FALSE",
+	"for":    "FOR",
+	"fun":    "FUN",
+	"if":     "IF",
+	"nil":    "NIL",
+	"or":     "OR",
+	"print":  "PRINT",
+	"return": "RETURN",
+	"super":  "SUPER",
+	"this":   "THIS",
+	"true":   "TRUE",
+	"var":    "VAR",
+	"while":  "WHILE",
+}
+
 func main() {
 	if len(os.Args) < 3 {
 		fmt.Fprintln(os.Stderr, "Usage: ./your_program.sh tokenize <filename>")
@@ -192,7 +211,11 @@ func main() {
 						i++
 					}
 					identifier := string(processedContents[start : i+1])
-					fmt.Printf("%s %s %s\n", IDENTIFIER, identifier, "null")
+					if len(reservedWords[identifier]) != 0 {
+						fmt.Printf("%s %s %s\n", reservedWords[identifier], identifier, "null")
+					} else {
+						fmt.Printf("%s %s %s\n", IDENTIFIER, identifier, "null")
+					}
 				} else {
 					errors++
 					fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", line, token)

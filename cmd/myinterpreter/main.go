@@ -94,8 +94,9 @@ func main() {
 
 	line := 1
 	errors := 0
-	if len(processedContents) > 0 {
-		for i := 0; i < len(processedContents); i++ {
+	contentLength := len(processedContents)
+	if contentLength > 0 {
+		for i := 0; i < contentLength; i++ {
 			token := processedContents[i]
 			switch token {
 			case tokens[LeftParen]:
@@ -119,37 +120,37 @@ func main() {
 			case tokens[STAR]:
 				fmt.Printf("%s %c %s\n", STAR, token, "null")
 			case tokens[EQUAL]: // Handle "=" and "==".
-				if i+1 < len(processedContents) && processedContents[i+1] == tokens[EQUAL] {
+				if i+1 < contentLength && processedContents[i+1] == tokens[EQUAL] {
 					fmt.Printf("%s %c%c %s\n", EqualEqual, token, token, "null")
 					i++ // Skip the second "=".
 				} else {
 					fmt.Printf("%s %c %s\n", EQUAL, token, "null")
 				}
 			case tokens[BANG]: // Handle "!" and "!=".
-				if i+1 < len(processedContents) && processedContents[i+1] == tokens[EQUAL] {
+				if i+1 < contentLength && processedContents[i+1] == tokens[EQUAL] {
 					fmt.Printf("%s %c%c %s\n", BangEqual, token, tokens[EQUAL], "null")
 					i++ // Skip the "=".
 				} else {
 					fmt.Printf("%s %c %s\n", BANG, token, "null")
 				}
 			case tokens[LESS]: // Handle "<" and "<=".
-				if i+1 < len(processedContents) && processedContents[i+1] == tokens[EQUAL] {
+				if i+1 < contentLength && processedContents[i+1] == tokens[EQUAL] {
 					fmt.Printf("%s %c%c %s\n", LessEqual, token, tokens[EQUAL], "null")
 					i++ // Skip the "=".
 				} else {
 					fmt.Printf("%s %c %s\n", LESS, token, "null")
 				}
 			case tokens[GREATER]: // Handle ">" and ">=".
-				if i+1 < len(processedContents) && processedContents[i+1] == tokens[EQUAL] {
+				if i+1 < contentLength && processedContents[i+1] == tokens[EQUAL] {
 					fmt.Printf("%s %c%c %s\n", GreaterEqual, token, tokens[EQUAL], "null")
 					i++ // Skip the "=".
 				} else {
 					fmt.Printf("%s %c %s\n", GREATER, token, "null")
 				}
 			case tokens[SLASH]: // Handle "/" and "//" (comments).
-				if i+1 < len(processedContents) && processedContents[i+1] == tokens[SLASH] {
+				if i+1 < contentLength && processedContents[i+1] == tokens[SLASH] {
 					// Skip single-line comments and increment line count for each newline encountered.
-					for i < len(processedContents) && processedContents[i] != tokens[NEWLINE] {
+					for i < contentLength && processedContents[i] != tokens[NEWLINE] {
 						i++
 					}
 					line++
@@ -158,13 +159,13 @@ func main() {
 				}
 			case tokens[STRING]:
 				start := i
-				for i+1 < len(processedContents) && processedContents[i+1] != tokens[STRING] {
+				for i+1 < contentLength && processedContents[i+1] != tokens[STRING] {
 					if processedContents[i+1] == tokens[NEWLINE] {
 						line++
 					}
 					i++
 				}
-				if i+1 >= len(processedContents) {
+				if i+1 >= contentLength {
 					errors++
 					fmt.Fprintf(os.Stderr, "[line %d] Error: Unterminated string.\n", line)
 				} else {
@@ -180,14 +181,14 @@ func main() {
 			default:
 				if unicode.IsDigit(token) {
 					start := i
-					for i+1 < len(processedContents) && (unicode.IsDigit(processedContents[i+1]) || processedContents[i+1] == '.') {
+					for i+1 < contentLength && (unicode.IsDigit(processedContents[i+1]) || processedContents[i+1] == '.') {
 						i++
 					}
 					numberLexeme := string(processedContents[start : i+1])
 					fmt.Printf("%s %s %s\n", NUMBER, numberLexeme, parseNumberLiteral(numberLexeme))
 				} else if isAlpha(token) {
 					start := i
-					for i+1 < len(processedContents) && isAlphaNumeric(processedContents[i+1]) {
+					for i+1 < contentLength && isAlphaNumeric(processedContents[i+1]) {
 						i++
 					}
 					identifier := string(processedContents[start : i+1])

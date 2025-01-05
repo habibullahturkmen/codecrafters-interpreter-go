@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"unicode"
 )
 
 const (
@@ -29,6 +31,7 @@ const (
 	TAB          = "TAB"
 	SPACE        = "SPACE"
 	STRING       = "STRING"
+	NUMBER       = "NUMBER"
 )
 
 var tokens = map[string]rune{
@@ -153,25 +156,9 @@ func main() {
 					fmt.Printf("%s %c %s\n", SLASH, token, "null")
 				}
 			case tokens[STRING]:
-				//stringLiteral := ""
-				//i++
-				//for i < len(processedContents) {
-				//	if processedContents[i] == tokens[NEWLINE] {
-				//		errors++
-				//		fmt.Fprintf(os.Stderr, "[line %d] Error: Unterminated string.\n", line)
-				//		break
-				//	} else if processedContents[i] == tokens[STRING] {
-				//		fmt.Printf("%s \"%s\" %s\n", STRING, stringLiteral, stringLiteral)
-				//		break
-				//	} else {
-				//		stringLiteral += string(processedContents[i])
-				//	}
-				//	i++
-				//}
-
 				start := i
-				for i+1 < len(processedContents) && processedContents[i+1] != '"' {
-					if processedContents[i+1] == '\n' {
+				for i+1 < len(processedContents) && processedContents[i+1] != tokens[STRING] {
+					if processedContents[i+1] == tokens[NEWLINE] {
 						line++
 					}
 					i++
@@ -181,17 +168,26 @@ func main() {
 					fmt.Fprintf(os.Stderr, "[line %d] Error: Unterminated string.\n", line)
 				} else {
 					i++
-					lex := string(processedContents[start : i+1])
-					lit := string(processedContents[start+1 : i])
-					fmt.Printf("%s %s %s\n", STRING, lex, lit)
+					stringLexeme := string(processedContents[start : i+1])
+					stringLiteral := string(processedContents[start+1 : i])
+					fmt.Printf("%s %s %s\n", STRING, stringLexeme, stringLiteral)
 				}
 			case tokens[NEWLINE]:
 				line++
 			case tokens[TAB], tokens[SPACE]:
 				continue
 			default:
-				errors++
-				fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", line, token)
+				if unicode.IsDigit(token) {
+					start := i
+					for i+1 < len(processedContents) && (unicode.IsDigit(processedContents[i+1]) || processedContents[i+1] == '.') {
+						i++
+					}
+					numberLexeme := string(processedContents[start : i+1])
+					fmt.Printf("%s %s %s\n", NUMBER, numberLexeme, parseNumberLiteral(numberLexeme))
+				} else {
+					errors++
+					fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", line, token)
+				}
 			}
 		}
 		fmt.Println("EOF  null")
@@ -202,6 +198,19 @@ func main() {
 	if errors > 0 {
 		os.Exit(65)
 	}
+}
+
+func parseNumberLiteral(input string) string {
+	floatValue, err := strconv.ParseFloat(input, 64)
+	if err != nil {
+		return input
+	}
+
+	if floatValue == float64(int(floatValue)) {
+		return fmt.Sprintf("%.1f", floatValue)
+	}
+
+	return strconv.FormatFloat(floatValue, 'f', -1, 64)
 }
 
 // Example output

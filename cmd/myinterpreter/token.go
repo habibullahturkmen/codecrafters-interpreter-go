@@ -1,5 +1,16 @@
 package main
 
+// Example output
+// <TOKEN_TYPE>    <LEXEME>    <LITERAL>
+// SLASH           /           null
+// STRING          "foo baz"   foo baz
+
+type token struct {
+	tokenType string
+	lexeme    string
+	literal   string
+}
+
 const (
 	LeftParen    = "LEFT_PAREN"
 	RightParen   = "RIGHT_PAREN"
@@ -20,34 +31,37 @@ const (
 	LessEqual    = "LESS_EQUAL"
 	GREATER      = "GREATER"
 	GreaterEqual = "GREATER_EQUAL"
-	NEWLINE      = "NEWLINE"
-	TAB          = "TAB"
-	SPACE        = "SPACE"
 	STRING       = "STRING"
 	NUMBER       = "NUMBER"
 	IDENTIFIER   = "IDENTIFIER"
+	EOF          = "EOF"
 )
 
-var tokens = map[string]rune{
-	"LEFT_PAREN":  '(',
-	"RIGHT_PAREN": ')',
-	"LEFT_BRACE":  '{',
-	"RIGHT_BRACE": '}',
-	"COMMA":       ',',
-	"DOT":         '.',
-	"MINUS":       '-',
-	"PLUS":        '+',
-	"SEMICOLON":   ';',
-	"STAR":        '*',
-	"SLASH":       '/',
-	"EQUAL":       '=',
-	"BANG":        '!',
-	"LESS":        '<',
-	"GREATER":     '>',
-	"NEWLINE":     '\n',
-	"TAB":         '\t',
-	"SPACE":       ' ',
-	"STRING":      '"',
+var tokens = map[string]string{
+	"LEFT_PAREN":    "(",
+	"RIGHT_PAREN":   ")",
+	"LEFT_BRACE":    "{",
+	"RIGHT_BRACE":   "}",
+	"COMMA":         ",",
+	"DOT":           ".",
+	"MINUS":         "-",
+	"PLUS":          "+",
+	"SEMICOLON":     ";",
+	"STAR":          "*",
+	"SLASH":         "/",
+	"EQUAL":         "=",
+	"EQUAL_EQUAL":   "==",
+	"BANG":          "!",
+	"BANG_EQUAL":    "!=",
+	"LESS":          "<",
+	"LESS_EQUAL":    "<=",
+	"GREATER":       ">",
+	"GREATER_EQUAL": ">=",
+	"NEWLINE":       "\n",
+	"TAB":           "\t",
+	"SPACE":         " ",
+	"STRING":        "\"",
+	"EOF":           "",
 }
 
 var reservedWords = map[string]string{

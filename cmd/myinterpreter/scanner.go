@@ -7,76 +7,79 @@ import (
 	"unicode"
 )
 
+var parsedTokens []string
+
 func scanner(fileContents []rune) {
 	line := 1
 	errors := 0
 	contentLength := len(fileContents)
+
 	if contentLength > 0 {
 		for i := 0; i < contentLength; i++ {
-			token := fileContents[i]
-			switch token {
-			case tokens[LeftParen]:
-				fmt.Printf("%s %c %s\n", LeftParen, token, "null")
-			case tokens[RightParen]:
-				fmt.Printf("%s %c %s\n", RightParen, token, "null")
-			case tokens[LeftBrace]:
-				fmt.Printf("%s %c %s\n", LeftBrace, token, "null")
-			case tokens[RightBrace]:
-				fmt.Printf("%s %c %s\n", RightBrace, token, "null")
-			case tokens[COMMA]:
-				fmt.Printf("%s %c %s\n", COMMA, token, "null")
-			case tokens[DOT]:
-				fmt.Printf("%s %c %s\n", DOT, token, "null")
-			case tokens[MINUS]:
-				fmt.Printf("%s %c %s\n", MINUS, token, "null")
-			case tokens[PLUS]:
-				fmt.Printf("%s %c %s\n", PLUS, token, "null")
-			case tokens[SEMICOLON]:
-				fmt.Printf("%s %c %s\n", SEMICOLON, token, "null")
-			case tokens[STAR]:
-				fmt.Printf("%s %c %s\n", STAR, token, "null")
-			case tokens[EQUAL]: // Handle "=" and "==".
-				if i+1 < contentLength && fileContents[i+1] == tokens[EQUAL] {
-					fmt.Printf("%s %c%c %s\n", EqualEqual, token, token, "null")
+			currentToken := fileContents[i]
+			switch currentToken {
+			case '(':
+				addToken(token{tokenType: LeftParen})
+			case ')':
+				addToken(token{tokenType: RightParen})
+			case '{':
+				addToken(token{tokenType: LeftBrace})
+			case '}':
+				addToken(token{tokenType: RightBrace})
+			case ',':
+				addToken(token{tokenType: COMMA})
+			case '.':
+				addToken(token{tokenType: DOT})
+			case '-':
+				addToken(token{tokenType: MINUS})
+			case '+':
+				addToken(token{tokenType: PLUS})
+			case ';':
+				addToken(token{tokenType: SEMICOLON})
+			case '*':
+				addToken(token{tokenType: STAR})
+			case '=': // Handle "=" and "==".
+				if i+1 < contentLength && fileContents[i+1] == '=' {
+					addToken(token{tokenType: EqualEqual})
 					i++ // Skip the second "=".
 				} else {
-					fmt.Printf("%s %c %s\n", EQUAL, token, "null")
+					addToken(token{tokenType: EQUAL})
 				}
-			case tokens[BANG]: // Handle "!" and "!=".
-				if i+1 < contentLength && fileContents[i+1] == tokens[EQUAL] {
-					fmt.Printf("%s %c%c %s\n", BangEqual, token, tokens[EQUAL], "null")
+			case '!': // Handle "!" and "!=".
+				if i+1 < contentLength && fileContents[i+1] == '=' {
+					addToken(token{tokenType: BangEqual})
 					i++ // Skip the "=".
 				} else {
-					fmt.Printf("%s %c %s\n", BANG, token, "null")
+					addToken(token{tokenType: BANG})
 				}
-			case tokens[LESS]: // Handle "<" and "<=".
-				if i+1 < contentLength && fileContents[i+1] == tokens[EQUAL] {
-					fmt.Printf("%s %c%c %s\n", LessEqual, token, tokens[EQUAL], "null")
+			case '<': // Handle "<" and "<=".
+				if i+1 < contentLength && fileContents[i+1] == '=' {
+					addToken(token{tokenType: LessEqual})
 					i++ // Skip the "=".
 				} else {
-					fmt.Printf("%s %c %s\n", LESS, token, "null")
+					addToken(token{tokenType: LESS})
 				}
-			case tokens[GREATER]: // Handle ">" and ">=".
-				if i+1 < contentLength && fileContents[i+1] == tokens[EQUAL] {
-					fmt.Printf("%s %c%c %s\n", GreaterEqual, token, tokens[EQUAL], "null")
+			case '>': // Handle ">" and ">=".
+				if i+1 < contentLength && fileContents[i+1] == '=' {
+					addToken(token{tokenType: GreaterEqual})
 					i++ // Skip the "=".
 				} else {
-					fmt.Printf("%s %c %s\n", GREATER, token, "null")
+					addToken(token{tokenType: GREATER})
 				}
-			case tokens[SLASH]: // Handle "/" and "//" (comments).
-				if i+1 < contentLength && fileContents[i+1] == tokens[SLASH] {
+			case '/': // Handle "/" and "//" (comments).
+				if i+1 < contentLength && fileContents[i+1] == '/' {
 					// Skip single-line comments and increment line count for each newline encountered.
-					for i < contentLength && fileContents[i] != tokens[NEWLINE] {
+					for i < contentLength && fileContents[i] != '\n' {
 						i++
 					}
 					line++
 				} else {
-					fmt.Printf("%s %c %s\n", SLASH, token, "null")
+					addToken(token{tokenType: SLASH})
 				}
-			case tokens[STRING]:
+			case '"':
 				start := i
-				for i+1 < contentLength && fileContents[i+1] != tokens[STRING] {
-					if fileContents[i+1] == tokens[NEWLINE] {
+				for i+1 < contentLength && fileContents[i+1] != '"' {
+					if fileContents[i+1] == '\n' {
 						line++
 					}
 					i++
@@ -86,42 +89,47 @@ func scanner(fileContents []rune) {
 					fmt.Fprintf(os.Stderr, "[line %d] Error: Unterminated string.\n", line)
 				} else {
 					i++
-					stringLexeme := string(fileContents[start : i+1])
-					stringLiteral := string(fileContents[start+1 : i])
-					fmt.Printf("%s %s %s\n", STRING, stringLexeme, stringLiteral)
+					lexeme := string(fileContents[start : i+1])
+					literal := string(fileContents[start+1 : i])
+					addToken(token{tokenType: STRING, lexeme: lexeme, literal: literal})
 				}
-			case tokens[NEWLINE]:
+			case '\n':
 				line++
-			case tokens[TAB], tokens[SPACE]:
+			case '\t', ' ', '\r':
 				continue
 			default:
-				if unicode.IsDigit(token) {
+				if unicode.IsDigit(currentToken) {
 					start := i
 					for i+1 < contentLength && (unicode.IsDigit(fileContents[i+1]) || fileContents[i+1] == '.') {
 						i++
 					}
-					numberLexeme := string(fileContents[start : i+1])
-					fmt.Printf("%s %s %s\n", NUMBER, numberLexeme, parseNumberLiteral(numberLexeme))
-				} else if isAlpha(token) {
+					lexeme := string(fileContents[start : i+1])
+					addToken(token{tokenType: NUMBER, lexeme: lexeme, literal: parseNumberLiteral(lexeme)})
+				} else if isAlpha(currentToken) {
 					start := i
 					for i+1 < contentLength && isAlphaNumeric(fileContents[i+1]) {
 						i++
 					}
-					identifier := string(fileContents[start : i+1])
-					if len(reservedWords[identifier]) != 0 {
-						fmt.Printf("%s %s %s\n", reservedWords[identifier], identifier, "null")
+					lexeme := string(fileContents[start : i+1])
+					if len(reservedWords[lexeme]) != 0 {
+						addToken(token{tokenType: reservedWords[lexeme], lexeme: lexeme, literal: "null"})
 					} else {
-						fmt.Printf("%s %s %s\n", IDENTIFIER, identifier, "null")
+						addToken(token{tokenType: IDENTIFIER, lexeme: lexeme, literal: "null"})
 					}
+
 				} else {
 					errors++
-					fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", line, token)
+					fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", line, currentToken)
 				}
 			}
 		}
-		fmt.Println("EOF  null")
+		addToken(token{tokenType: EOF})
 	} else {
-		fmt.Println("EOF  null")
+		addToken(token{tokenType: EOF})
+	}
+
+	for _, token := range parsedTokens {
+		fmt.Print(token)
 	}
 
 	if errors > 0 {
@@ -150,4 +158,16 @@ func isAlpha(c rune) bool {
 
 func isAlphaNumeric(c rune) bool {
 	return isAlpha(c) || unicode.IsDigit(c)
+}
+
+func addToken(token token) {
+	if token.lexeme == "" && token.literal == "" {
+		parsedTokens = formatAndAppendToken(token.tokenType, tokens[token.tokenType], "null")
+	} else {
+		parsedTokens = formatAndAppendToken(token.tokenType, token.lexeme, token.literal)
+	}
+}
+
+func formatAndAppendToken(tokenType string, lexeme string, literal string) []string {
+	return append(parsedTokens, fmt.Sprintf("%s %s %s\n", tokenType, lexeme, literal))
 }
